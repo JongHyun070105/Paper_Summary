@@ -13,19 +13,22 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 60),
+              const SizedBox(height: 80),
               Text(
                 '환영합니다',
-                style: Theme.of(
-                  context,
-                ).textTheme.displayLarge?.copyWith(fontSize: 40, height: 1.1),
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontSize: 42,
+                  height: 1.1,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Text(
                 'Paper Reader와 함께\n스마트한 논문 읽기를 시작하세요.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Colors.grey[400],
-                  height: 1.5,
+                  height: 1.6,
+                  fontSize: 16,
                 ),
               ),
               const Spacer(),
@@ -63,6 +66,13 @@ class LoginScreen extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white10),
+          boxShadow: [
+            BoxShadow(
+              color: bgColor.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -48,16 +48,20 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
               const SizedBox(height: 40),
               Text(
                 '어떤 분야에\n관심이 있으신가요?',
-                style: Theme.of(
-                  context,
-                ).textTheme.displayLarge?.copyWith(fontSize: 36, height: 1.2),
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontSize: 38,
+                  height: 1.2,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Text(
                 '관심사를 선택하시면 맞춤형 논문을 추천해 드립니다.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(color: Colors.grey[400]),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.grey[400],
+                  fontSize: 16,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 40),
               Expanded(
@@ -121,14 +125,31 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                           );
                         }
                       : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
+                  style:
+                      ElevatedButton.styleFrom(
+                        backgroundColor: _selectedInterests.isNotEmpty
+                            ? Theme.of(context).primaryColor
+                            : Colors.grey[800],
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                        shadowColor: _selectedInterests.isNotEmpty
+                            ? Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.3)
+                            : Colors.transparent,
+                      ).copyWith(
+                        elevation: MaterialStateProperty.resolveWith<double>((
+                          Set<MaterialState> states,
+                        ) {
+                          if (states.contains(MaterialState.disabled)) {
+                            return 0;
+                          }
+                          return 8;
+                        }),
+                      ),
                   child: const Text(
                     '계속하기',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

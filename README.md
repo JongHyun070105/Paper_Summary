@@ -1,16 +1,49 @@
-# flutter_paper_summary
+# 📚 Paper Reader
 
-A new Flutter project.
+AI 기반 논문 읽기 앱 - 복잡한 논문을 쉽고 스마트하게 읽어보세요.
 
-## Getting Started
+## ✨ 주요 기능
 
-This project is a starting point for a Flutter application.
+- 🎯 **맞춤형 논문 추천**: 관심 분야를 선택하면 관련 논문을 추천받을 수 있습니다
+- 🤖 **AI 어시스턴트**: 논문 내용에 대해 질문하고 요약을 받을 수 있습니다
+- 🌐 **실시간 번역**: 원문과 번역본을 자유롭게 전환하며 읽을 수 있습니다
+- 🔍 **Circle to Search**: 특정 영역을 선택하여 원문과 비교할 수 있습니다
+- 📌 **북마크**: 중요한 논문을 저장하고 관리할 수 있습니다
 
-A few resources to get you started if this is your first Flutter project:
+## 🛠 기술 스택
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Flutter** - 크로스 플랫폼 모바일 앱 개발
+- **Google Fonts** - 아름다운 타이포그래피
+- **Glassmorphism** - 모던한 UI 디자인
+- **Lucide Icons** - 깔끔한 아이콘 세트
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🚀 시작하기
+
+### 필수 요구사항
+
+- Flutter SDK (3.9.0 이상)
+- Dart SDK
+- Android Studio / Xcode (플랫폼별)
+
+### 설치 및 실행
+
+```bash
+# 의존성 설치
+flutter pub get
+
+# 앱 실행
+flutter run
+```
+
+## 📱 화면 구성
+
+- **온보딩**: 앱 소개 및 Google 로그인
+- **관심사 선택**: 관심 분야 선택
+- **홈**: 논문 갤러리 및 추천
+- **논문 상세**: AI 채팅, 번역, Circle to Search
+- **북마크**: 저장한 논문 목록
+- **프로필**: 사용자 설정
+
+## 📄 라이선스
+
+이 프로젝트는 개인 프로젝트입니다.
