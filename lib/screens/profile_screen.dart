@@ -1,8 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_paper_summary/services/auth_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthService _authService = AuthService();
+  Map<String, String?> _userInfo = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  void _loadUserInfo() {
+    setState(() {
+      _userInfo = _authService.getUserInfo();
+    });
+  }
+
+  Future<void> _handleLogout() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E24),
+          title: const Text('로그아웃', style: TextStyle(color: Colors.white)),
+          content: const Text(
+            '정말 로그아웃하시겠습니까?',
+            style: TextStyle(color: Colors.grey),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('취소', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _authService.signOut();
+                if (mounted) {
+                  Navigator.pushReplacementNamed(context, '/onboarding');
+                }
+              },
+              child: const Text(
+                '로그아웃',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,29 +81,40 @@ class ProfileScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: Colors.grey[800],
-                    child: const Icon(
-                      LucideIcons.user,
-                      size: 40,
-                      color: Colors.white,
-                    ),
+                    backgroundImage: _userInfo['photoURL'] != null
+                        ? NetworkImage(_userInfo['photoURL']!)
+                        : null,
+                    child: _userInfo['photoURL'] == null
+                        ? const Icon(
+                            LucideIcons.user,
+                            size: 40,
+                            color: Colors.white,
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'User',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _userInfo['displayName'] ?? 'User',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'user@example.com',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-                      ),
-                    ],
+                        Text(
+                          _userInfo['email'] ?? 'user@example.com',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[400],
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -71,9 +138,7 @@ class ProfileScreen extends StatelessWidget {
                   '로그아웃',
                   style: TextStyle(color: Colors.redAccent),
                 ),
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, '/login');
-                },
+                onTap: _handleLogout,
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_paper_summary/services/auth_service.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -12,6 +13,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  final AuthService _authService = AuthService();
+  final bool _isLoading = false;
 
   final List<Map<String, String>> _pages = [
     {
@@ -64,6 +67,36 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         return LucideIcons.layers;
       default:
         return LucideIcons.star;
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userCredential = await _authService.signInWithGoogle();
+
+      if (userCredential != null && mounted) {
+        // 로그인 성공 - AuthWrapper가 자동으로 MainScreen으로 이동
+        Navigator.pushReplacementNamed(context, '/interest');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('로그인 실패: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -184,9 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 const SizedBox(height: 32),
                 if (_currentPage == _pages.length - 1)
                   GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacementNamed(context, '/interest');
-                    },
+                    onTap: _isLoading ? null : _handleGoogleSignIn,
                     child: Container(
                       width: double.infinity,
                       height: 56,
@@ -203,18 +234,28 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            LucideIcons.chrome,
-                            color: Colors.black,
-                            size: 24,
-                          ),
-                          SizedBox(width: 12),
+                          if (_isLoading)
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          else
+                            const Icon(
+                              LucideIcons.chrome,
+                              color: Colors.black,
+                              size: 24,
+                            ),
+                          const SizedBox(width: 12),
                           Text(
-                            'Google로 계속하기',
-                            style: TextStyle(
+                            _isLoading ? '로그인 중...' : 'Google로 계속하기',
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

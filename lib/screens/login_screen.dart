@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_paper_summary/services/auth_service.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +47,7 @@ class LoginScreen extends StatelessWidget {
                 LucideIcons.chrome,
                 Colors.white,
                 Colors.black,
+                onTap: _isLoading ? null : _handleGoogleSignIn,
               ),
               const SizedBox(height: 40),
               const SizedBox(height: 20),
@@ -46,6 +56,35 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userCredential = await _authService.signInWithGoogle();
+
+      if (userCredential != null && mounted) {
+        Navigator.pushReplacementNamed(context, '/interest');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('로그인 실패: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Widget _buildSocialButton(
@@ -57,8 +96,7 @@ class LoginScreen extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap:
-          onTap ?? () => Navigator.pushReplacementNamed(context, '/interest'),
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         height: 56,
@@ -77,10 +115,20 @@ class LoginScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: textColor, size: 24),
+            if (_isLoading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.black,
+                  strokeWidth: 2,
+                ),
+              )
+            else
+              Icon(icon, color: textColor, size: 24),
             const SizedBox(width: 12),
             Text(
-              text,
+              _isLoading ? '로그인 중...' : text,
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,

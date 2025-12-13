@@ -192,47 +192,41 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 flex: 2,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(14.0),
+                                  padding: const EdgeInsets.all(12.0),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        paper['title'],
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                          height: 1.2,
+                                      Expanded(
+                                        child: Text(
+                                          paper['title'],
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: Colors.white,
+                                            height: 1.2,
+                                          ),
                                         ),
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            paper['authors'],
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: Colors.grey[400],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            paper['year'],
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: Colors.grey[500],
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        paper['authors'],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ),
+                                      Text(
+                                        paper['year'],
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.grey[500],
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ],
                                   ),
