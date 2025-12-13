@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:flutter_paper_summary/models/paper_model.dart';
 
 class PaperDetailScreen extends StatefulWidget {
   const PaperDetailScreen({super.key});
@@ -9,19 +10,25 @@ class PaperDetailScreen extends StatefulWidget {
   State<PaperDetailScreen> createState() => _PaperDetailScreenState();
 }
 
-class _PaperDetailScreenState extends State<PaperDetailScreen> {
+class _PaperDetailScreenState extends State<PaperDetailScreen>
+    with TickerProviderStateMixin {
   final TextEditingController _chatController = TextEditingController();
   final FocusNode _chatFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   final List<Map<String, String>> _messages = [];
 
   bool _isTranslated = true;
   bool _isChatOpen = false;
   bool _isCircleMode = false;
   bool _showPip = false;
-  bool _isInputFocused = false; // 입력창 포커스 상태
-  bool _isBookmarked = false; // 북마크 상태
+  bool _isBookmarked = false;
+  bool _isLoading = false;
+  bool _isInputFocused = false;
   Offset? _dragStart;
   Offset? _dragEnd;
+
+  late AnimationController _chatAnimationController;
+  late Animation<double> _chatAnimation;
 
   // 추천 질문 리스트
   final List<String> _suggestedQuestions = [
@@ -33,39 +40,69 @@ class _PaperDetailScreenState extends State<PaperDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _chatFocusNode.addListener(() {
-      setState(() {
-        _isInputFocused = _chatFocusNode.hasFocus;
-      });
-    });
+    _chatAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _chatAnimation = CurvedAnimation(
+      parent: _chatAnimationController,
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void dispose() {
     _chatFocusNode.dispose();
     _chatController.dispose();
+    _scrollController.dispose();
+    _chatAnimationController.dispose();
     super.dispose();
   }
 
   void _sendMessage() {
     if (_chatController.text.trim().isEmpty) return;
+
+    final userMessage = _chatController.text.trim();
+    _chatController.clear();
+
     setState(() {
-      _messages.add({'role': 'user', 'text': _chatController.text});
-      _isChatOpen = true;
-      _chatFocusNode.unfocus(); // 키보드 숨기기
-      // Mock AI response
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (mounted) {
-          setState(() {
-            _messages.add({
-              'role': 'ai',
-              'text': '질문하신 내용에 대한 요약입니다. 이 논문에서는 Transformer 아키텍처를 제안하고 있습니다.',
-            });
-          });
-        }
-      });
-      _chatController.clear();
+      _messages.add({'role': 'user', 'text': userMessage});
+      _isLoading = true;
     });
+
+    if (!_isChatOpen) {
+      setState(() => _isChatOpen = true);
+      _chatAnimationController.forward();
+    }
+
+    // Mock AI response
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'role': 'ai',
+            'text':
+                '질문하신 내용에 대한 요약입니다. 이 논문에서는 Transformer 아키텍처를 제안하고 있습니다. '
+                'Self-Attention 메커니즘을 활용하여 순환 신경망 없이도 뛰어난 성능을 달성했습니다.',
+          });
+          _isLoading = false;
+        });
+      }
+    });
+  }
+
+  void _openChat() {
+    setState(() => _isChatOpen = true);
+    _chatAnimationController.forward();
+  }
+
+  void _closeChat() {
+    _chatAnimationController.reverse().then((_) {
+      if (mounted) {
+        setState(() => _isChatOpen = false);
+      }
+    });
+    _chatFocusNode.unfocus();
   }
 
   void _showAISummary() {
@@ -121,60 +158,84 @@ class _PaperDetailScreenState extends State<PaperDetailScreen> {
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).primaryColor,
+      ),
+    );
+  }
+
+  Widget _buildPaperText(String text) {
+    return Text(
+      text,
+      style: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(height: 1.6, fontSize: 16),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    // 업로드된 논문 데이터 확인
+    final args = ModalRoute.of(context)?.settings.arguments;
+    String paperTitle = 'Attention Is All You Need';
+    String paperContent = '';
+
+    if (args is PaperModel) {
+      paperTitle = args.title;
+      paperContent = args.content;
+    }
+
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // Main Content (Paper Text)
           Positioned.fill(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 130, 20, 120),
+              controller: _scrollController,
+              padding: EdgeInsets.fromLTRB(
+                20,
+                120,
+                20,
+                _isChatOpen ? 420 : 100,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title (without Translation Toggle)
                   Text(
-                    'Attention Is All You Need',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.displayLarge?.copyWith(fontSize: 28),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    _isTranslated ? '초록 (Abstract)' : 'Abstract',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Theme.of(context).primaryColor,
+                    paperTitle,
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 24),
+                  _buildSectionTitle(
+                    _isTranslated ? '초록 (Abstract)' : 'Abstract',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildPaperText(
                     _isTranslated
                         ? '지배적인 시퀀스 변환 모델들은 인코더와 디코더를 포함하는 복잡한 순환 신경망이나 합성곱 신경망에 기반하고 있습니다. 가장 성능이 좋은 모델들도 어텐션 메커니즘을 통해 인코더와 디코더를 연결합니다. 우리는 순환과 합성곱을 완전히 배제하고 오직 어텐션 메커니즘에만 기반한 새로운 단순한 네트워크 아키텍처인 Transformer를 제안합니다.'
                         : 'The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(height: 1.6),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
+                  const SizedBox(height: 24),
+                  _buildSectionTitle(
                     _isTranslated ? '1. 서론 (Introduction)' : '1. Introduction',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 12),
+                  _buildPaperText(
                     _isTranslated
-                        ? '순환 신경망, 특히 LSTM과 GRU는 언어 모델링 및 기계 번역과 같은 시퀀스 모델링 및 변환 문제에서 최첨단 접근 방식으로 확고히 자리 잡았습니다.'
-                        : 'Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation.',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(height: 1.6),
+                        ? '순환 신경망, 특히 LSTM과 GRU는 언어 모델링 및 기계 번역과 같은 시퀀스 모델링 및 변환 문제에서 최첨단 접근 방식으로 확고히 자리 잡았습니다. 이러한 모델들은 일반적으로 입력과 출력 시퀀스의 심볼 위치를 따라 계산을 인수분해합니다.'
+                        : 'Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation. These models typically factor computation along the symbol positions of the input and output sequences.',
                   ),
+                  const SizedBox(height: 100), // 추가 여백
                 ],
               ),
             ),
@@ -268,10 +329,13 @@ class _PaperDetailScreenState extends State<PaperDetailScreen> {
                       Positioned(
                         top: 8,
                         right: 8,
-                        child: Icon(
-                          LucideIcons.x,
-                          color: Colors.white70,
-                          size: 16,
+                        child: GestureDetector(
+                          onTap: () => setState(() => _showPip = false),
+                          child: const Icon(
+                            LucideIcons.x,
+                            color: Colors.white70,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ],
@@ -692,56 +756,63 @@ class _PaperDetailScreenState extends State<PaperDetailScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: TextField(
-                                controller: _chatController,
-                                focusNode: _chatFocusNode,
-                                autofocus: false,
-                                enableInteractiveSelection: true,
-                                textInputAction: TextInputAction.send,
-                                keyboardType: TextInputType.text,
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: 'AI에게 질문하기...',
-                                  hintStyle: const TextStyle(
-                                    color: Colors.white54,
+                              child: Focus(
+                                onFocusChange: (hasFocus) {
+                                  setState(() {
+                                    _isInputFocused = hasFocus;
+                                  });
+                                },
+                                child: TextField(
+                                  controller: _chatController,
+                                  focusNode: _chatFocusNode,
+                                  autofocus: false,
+                                  enableInteractiveSelection: true,
+                                  textInputAction: TextInputAction.send,
+                                  keyboardType: TextInputType.text,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  style: const TextStyle(
+                                    color: Colors.white,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
                                   ),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.black.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.1,
+                                  decoration: InputDecoration(
+                                    hintText: 'AI에게 질문하기...',
+                                    hintStyle: const TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.black.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide(
+                                        color: Theme.of(
+                                          context,
+                                        ).primaryColor.withValues(alpha: 0.5),
+                                        width: 2,
                                       ),
                                     ),
                                   ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide(
-                                      color: Theme.of(
-                                        context,
-                                      ).primaryColor.withValues(alpha: 0.5),
-                                      width: 2,
-                                    ),
-                                  ),
+                                  onSubmitted: (_) => _sendMessage(),
                                 ),
-                                onSubmitted: (_) => _sendMessage(),
                               ),
                             ),
                             const SizedBox(width: 12),

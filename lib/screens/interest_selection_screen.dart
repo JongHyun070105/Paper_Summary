@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_paper_summary/services/user_preferences_service.dart';
 
 class InterestSelectionScreen extends StatefulWidget {
   const InterestSelectionScreen({super.key});
@@ -9,6 +10,8 @@ class InterestSelectionScreen extends StatefulWidget {
 }
 
 class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
+  final UserPreferencesService _prefsService = UserPreferencesService();
+
   final List<String> _interests = [
     '인공지능',
     '머신러닝',
@@ -117,12 +120,19 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: _selectedInterests.isNotEmpty
-                      ? () {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            '/main',
-                            arguments: _selectedInterests.toList(),
+                      ? () async {
+                          // 관심사 저장
+                          await _prefsService.saveInterests(
+                            _selectedInterests.toList(),
                           );
+
+                          if (mounted) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              '/main',
+                              arguments: _selectedInterests.toList(),
+                            );
+                          }
                         }
                       : null,
                   style:

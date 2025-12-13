@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_paper_summary/services/user_preferences_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,6 +10,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final UserPreferencesService _prefsService = UserPreferencesService();
+  List<String> _userInterests = [];
+
   final List<Map<String, dynamic>> _papers = [
     {
       'title': 'Attention Is All You Need',
@@ -49,15 +53,29 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadUserInterests();
+  }
+
+  Future<void> _loadUserInterests() async {
+    final interests = await _prefsService.getInterests();
+    setState(() {
+      _userInterests = interests.isNotEmpty ? interests : ['AI', 'ML'];
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Retrieve arguments safely
     final args = ModalRoute.of(context)?.settings.arguments;
-    List<String> selectedInterests = [];
-    if (args is List<String>) {
+    List<String> selectedInterests = _userInterests;
+
+    if (args is List<String> && args.isNotEmpty) {
       selectedInterests = args;
-    } else {
-      // Default fallback if no args provided (e.g. direct nav during dev)
-      selectedInterests = ['AI', 'ML'];
+      // 새로운 관심사가 전달되면 저장
+      _prefsService.saveInterests(args);
+      _userInterests = args;
     }
 
     return Scaffold(

@@ -125,9 +125,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 40),
               const Divider(color: Colors.white10),
               ListTile(
-                leading: const Icon(LucideIcons.settings, color: Colors.white),
-                title: const Text('설정', style: TextStyle(color: Colors.white)),
-                onTap: () {},
+                leading: Icon(
+                  LucideIcons.fileText,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                title: Text(
+                  '내 논문',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pushNamed(context, '/my-papers');
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  LucideIcons.bookmark,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                title: Text(
+                  '북마크',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                onTap: () {
+                  // TODO: 북마크 화면으로 이동
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('북마크 기능은 준비 중입니다')),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  LucideIcons.settings,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                title: Text(
+                  '설정',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings');
+                },
               ),
               ListTile(
                 leading: const Icon(

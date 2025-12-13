@@ -1,34 +1,49 @@
 {
   "project_info": {
-    "project_number": "YOUR_PROJECT_NUMBER",
-    "project_id": "YOUR_PROJECT_ID",
-    "storage_bucket": "YOUR_PROJECT_ID.appspot.com"
+    "project_number": "1022988482630",
+    "project_id": "paper-summary-32993",
+    "storage_bucket": "paper-summary-32993.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "YOUR_ANDROID_APP_ID",
+        "mobilesdk_app_id": "1:1022988482630:android:e938ab87a14b1e371cb247",
         "android_client_info": {
           "package_name": "com.example.flutter_paper_summary"
         }
       },
       "oauth_client": [
         {
-          "client_id": "YOUR_WEB_CLIENT_ID",
+          "client_id": "1022988482630-aksgp2s40jda7orftvf7232nav8g59lq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flutter_paper_summary",
+            "certificate_hash": "d8a571a520e6095044cef8829a994331b91f217f"
+          }
+        },
+        {
+          "client_id": "1022988482630-2esj1c5ncr7aaknvuo5j82ivvap445du.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "YOUR_API_KEY"
+          "current_key": "AIzaSyBAOVHx3kzjl11RQM46RKSiAIo00j-cZZw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "YOUR_WEB_CLIENT_ID",
+              "client_id": "1022988482630-2esj1c5ncr7aaknvuo5j82ivvap445du.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1022988482630-7ou40fm4h0dj8od3vhb50bmoeolfrkjs.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterPaperSummary"
+              }
             }
           ]
         }

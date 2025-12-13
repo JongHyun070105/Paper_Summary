@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_paper_summary/screens/home_screen.dart';
-import 'package:flutter_paper_summary/screens/bookmark_screen.dart';
+import 'package:flutter_paper_summary/screens/upload_screen.dart';
 import 'package:flutter_paper_summary/screens/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const BookmarkScreen(),
+    const UploadScreen(),
     const ProfileScreen(),
   ];
 
@@ -44,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(LucideIcons.home, 0),
-              _buildNavItem(LucideIcons.bookmark, 1),
+              _buildNavItem(LucideIcons.plus, 1),
               _buildNavItem(LucideIcons.user, 2),
             ],
           ),

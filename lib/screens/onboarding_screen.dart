@@ -14,7 +14,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final AuthService _authService = AuthService();
-  final bool _isLoading = false;
+  bool _isLoading = false;
 
   final List<Map<String, String>> _pages = [
     {
