@@ -6,7 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_paper_summary/models/paper_model.dart';
+import 'package:flutter_paper_summary/models/paper_chunk_model.dart';
 import 'package:flutter_paper_summary/services/auth_service.dart';
+import 'package:flutter_paper_summary/services/paper_chunk_service.dart';
 
 class PdfService {
   final AuthService _authService = AuthService();
@@ -274,6 +276,86 @@ class PdfService {
   Future<void> _savePaperToLocal(PaperModel paper) async {
     // TODO: SharedPreferences나 로컬 DB에 저장
     // 지금은 간단히 구현
+  }
+
+  // 논문을 청크와 함께 저장
+  Future<PaperWithChunks> savePaperWithChunks({
+    required String title,
+    required String content,
+    String? filePath,
+    String? url,
+    List<String> authors = const [],
+    String? abstract,
+    int pageCount = 0,
+  }) async {
+    final user = _authService.currentUser;
+    if (user == null) throw Exception('사용자가 로그인되지 않았습니다.');
+
+    // 1. 기본 논문 정보 생성
+    final paperId = _uuid.v4();
+    final paper = PaperModel(
+      id: paperId,
+      title: title,
+      content: '', // 청크로 분할되므로 빈 문자열
+      filePath: filePath,
+      url: url,
+      uploadedAt: DateTime.now(),
+      userId: user.uid,
+      authors: authors,
+      abstract: abstract,
+      pageCount: pageCount,
+    );
+
+    // 2. 텍스트를 청크로 분할
+    final chunkData = PaperChunkService.splitIntoChunks(content);
+    final chunks = chunkData
+        .map(
+          (data) => PaperChunkModel(
+            id: _uuid.v4(),
+            paperId: paperId,
+            index: data['index'],
+            section: data['section'],
+            content: data['content'],
+            startChar: data['startChar'],
+            endChar: data['endChar'],
+            createdAt: DateTime.now(),
+          ),
+        )
+        .toList();
+
+    // 3. 로컬 저장소에 저장
+    await _savePaperWithChunksToLocal(paper, chunks);
+
+    return PaperWithChunks(paper: paper, chunks: chunks);
+  }
+
+  // 로컬에 논문과 청크 저장
+  Future<void> _savePaperWithChunksToLocal(
+    PaperModel paper,
+    List<PaperChunkModel> chunks,
+  ) async {
+    // TODO: SharedPreferences나 로컬 DB에 저장
+    // 청크는 별도 테이블/키로 관리
+  }
+
+  // 논문 청크 페이지네이션으로 가져오기
+  Future<List<PaperChunkModel>> getPaperChunks(
+    String paperId, {
+    int page = 0,
+    int pageSize = 5,
+    String? section,
+  }) async {
+    // TODO: 실제 구현에서는 DB에서 페이지네이션으로 가져오기
+    return [];
+  }
+
+  // 특정 섹션의 청크들 가져오기
+  Future<List<PaperChunkModel>> getPaperChunksBySection(
+    String paperId,
+    String section,
+  ) async {
+    // TODO: 실제 구현
+    return [];
   }
 
   // 사용자의 논문 목록 가져오기

@@ -22,28 +22,6 @@ class _UploadScreenState extends State<UploadScreen> {
     super.dispose();
   }
 
-  Future<void> _pickAndProcessPdf() async {
-    setState(() {
-      _isProcessing = true;
-    });
-
-    try {
-      final file = await _pdfService.pickPdfFile();
-      if (file != null) {
-        await _processPdfFile(file);
-      } else {
-        setState(() {
-          _isProcessing = false;
-        });
-      }
-    } catch (e) {
-      _showErrorDialog('파일 선택 오류: ${e.toString()}');
-      setState(() {
-        _isProcessing = false;
-      });
-    }
-  }
-
   Future<void> _downloadAndProcessPdf() async {
     final url = _urlController.text.trim();
     if (url.isEmpty) {
@@ -191,7 +169,7 @@ class _UploadScreenState extends State<UploadScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('논문 업로드'),
+        title: const Text('논문 등록'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -200,8 +178,9 @@ class _UploadScreenState extends State<UploadScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 헤더
             Text(
-              '논문을 업로드하세요',
+              '논문 URL로 등록',
               style: Theme.of(context).textTheme.displayLarge?.copyWith(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -209,7 +188,7 @@ class _UploadScreenState extends State<UploadScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'PDF 파일을 선택하거나 URL을 입력하여 논문을 업로드할 수 있습니다.',
+              'arXiv, Google Scholar 등의 논문 URL을 입력하여 논문을 등록하세요.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(
                   context,
@@ -218,22 +197,14 @@ class _UploadScreenState extends State<UploadScreen> {
             ),
             const SizedBox(height: 40),
 
-            // PDF 파일 업로드
-            _buildUploadOption(
-              icon: LucideIcons.upload,
-              title: 'PDF 파일 업로드',
-              subtitle: '기기에서 PDF 파일을 선택하세요',
-              onTap: _isProcessing ? null : _pickAndProcessPdf,
-            ),
-
-            const SizedBox(height: 20),
-
-            // URL 입력
-            _buildUrlSection(),
+            // URL 입력 섹션
+            _buildUrlInputSection(),
 
             const SizedBox(height: 40),
 
-            // 처리 상태 표시 (제거됨)
+            // 예시 URL들
+            _buildExampleUrls(),
+
             const SizedBox(height: 40),
 
             // 도움말
@@ -244,90 +215,12 @@ class _UploadScreenState extends State<UploadScreen> {
     );
   }
 
-  Widget _buildUploadOption({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).primaryColor,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              LucideIcons.chevronRight,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUrlSection() {
+  Widget _buildUrlInputSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'URL로 업로드',
+          '논문 URL',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
@@ -344,14 +237,144 @@ class _UploadScreenState extends State<UploadScreen> {
           child: TextField(
             controller: _urlController,
             decoration: InputDecoration(
-              hintText: 'https://example.com/paper.pdf',
+              hintText: 'https://arxiv.org/abs/1706.03762',
               hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
-              suffixIcon: IconButton(
-                icon: const Icon(LucideIcons.download),
-                onPressed: _isProcessing ? null : _downloadAndProcessPdf,
+              suffixIcon: Container(
+                margin: const EdgeInsets.all(8),
+                child: ElevatedButton(
+                  onPressed: _isProcessing ? null : _downloadAndProcessPdf,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? Colors.black
+                        : Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  child: _isProcessing
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? Colors.black
+                                : Colors.white,
+                          ),
+                        )
+                      : const Text('등록'),
+                ),
               ),
+            ),
+            maxLines: 3,
+            keyboardType: TextInputType.url,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExampleUrls() {
+    final examples = [
+      {
+        'title': 'arXiv',
+        'url': 'https://arxiv.org/abs/1706.03762',
+        'description': 'Attention Is All You Need',
+      },
+      {
+        'title': 'Google Scholar',
+        'url': 'https://scholar.google.com/...',
+        'description': 'Google Scholar 논문 링크',
+      },
+      {
+        'title': 'IEEE Xplore',
+        'url': 'https://ieeexplore.ieee.org/...',
+        'description': 'IEEE 논문 링크',
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '예시 URL',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        ...examples.map(
+          (example) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    LucideIcons.link,
+                    size: 16,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        example['title']!,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        example['description']!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    LucideIcons.copy,
+                    size: 16,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                  onPressed: () {
+                    _urlController.text = example['url']!;
+                  },
+                ),
+              ],
             ),
           ),
         ),
@@ -392,9 +415,9 @@ class _UploadScreenState extends State<UploadScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '• PDF 파일에서 자동으로 텍스트를 추출합니다\n'
-            '• 제목, 저자, 초록을 자동으로 인식합니다\n'
-            '• 업로드된 논문은 "내 논문" 탭에서 확인할 수 있습니다',
+            '• PDF 링크를 직접 입력하거나 논문 페이지 URL을 입력하세요\n'
+            '• arXiv, Google Scholar, IEEE 등 대부분의 논문 사이트를 지원합니다\n'
+            '• 등록된 논문은 "내 논문" 탭에서 확인할 수 있습니다',
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(
