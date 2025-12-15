@@ -189,14 +189,14 @@ class _PaperContentViewerState extends State<PaperContentViewer> {
 
             // 청크 내용
             Text(
-              chunk.content,
+              chunk.getContent(false), // 기본적으로 원본 표시
               style: const TextStyle(fontSize: 16, height: 1.6),
             ),
 
             // 청크 정보
             const SizedBox(height: 8),
             Text(
-              'Chunk ${chunk.index + 1} • ${chunk.content.length} characters',
+              'Chunk ${chunk.index + 1} • ${chunk.originalContent.length} characters',
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(

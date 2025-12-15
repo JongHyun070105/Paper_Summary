@@ -14,8 +14,8 @@ class PaperChunkService {
     int chunkIndex = 0;
     for (final section in sections) {
       final sectionChunks = _splitSectionIntoChunks(
-        section['content'],
-        section['title'],
+        section['content'] as String,
+        section['title'] as String,
         chunkIndex,
       );
       chunks.addAll(sectionChunks);

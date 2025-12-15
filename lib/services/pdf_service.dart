@@ -315,7 +315,7 @@ class PdfService {
             paperId: paperId,
             index: data['index'],
             section: data['section'],
-            content: data['content'],
+            originalContent: data['content'],
             startChar: data['startChar'],
             endChar: data['endChar'],
             createdAt: DateTime.now(),
