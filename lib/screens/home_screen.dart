@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_paper_summary/models/paper_model.dart';
+import 'package:flutter_paper_summary/config/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,16 +15,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedFilter = '전체';
   List<Map<String, dynamic>> _searchResults = [];
 
-  // 관심사 필터 옵션
-  final List<String> _filterOptions = [
-    '전체',
-    '인공지능',
-    '머신러닝',
-    '딥러닝',
-    '컴퓨터 비전',
-    '자연어 처리',
-    '로보틱스',
-  ];
+  // 관심사 필터 옵션 (상수에서 가져오기)
+  final List<String> _filterOptions = AppConstants.interestCategories;
 
   // 더미 논문 데이터 (나중에 실제 API로 대체)
   final List<Map<String, dynamic>> _allPapers = [

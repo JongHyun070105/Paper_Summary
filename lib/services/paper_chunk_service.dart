@@ -1,8 +1,10 @@
 import 'dart:math';
+import 'package:flutter_paper_summary/config/app_constants.dart';
 
 class PaperChunkService {
-  static const int maxChunkSize = 2000; // 문자 수 기준
-  static const int overlapSize = 200; // 청크 간 중복 문자 수
+  // 상수를 AppConstants에서 가져오기
+  static int get maxChunkSize => AppConstants.maxChunkSize;
+  static int get overlapSize => AppConstants.overlapSize;
 
   /// 논문 텍스트를 의미 단위 청크로 분할
   static List<Map<String, dynamic>> splitIntoChunks(String fullText) {
@@ -29,16 +31,8 @@ class PaperChunkService {
   static List<Map<String, String>> _splitBySections(String text) {
     final sections = <Map<String, String>>[];
 
-    // 일반적인 논문 섹션 패턴
-    final sectionPatterns = [
-      RegExp(r'\n\s*(Abstract|초록)\s*\n', caseSensitive: false),
-      RegExp(r'\n\s*(\d+\.?\s*)?(Introduction|서론)\s*\n', caseSensitive: false),
-      RegExp(r'\n\s*(\d+\.?\s*)?(Methods?|방법론?)\s*\n', caseSensitive: false),
-      RegExp(r'\n\s*(\d+\.?\s*)?(Results?|결과)\s*\n', caseSensitive: false),
-      RegExp(r'\n\s*(\d+\.?\s*)?(Discussion|토론)\s*\n', caseSensitive: false),
-      RegExp(r'\n\s*(\d+\.?\s*)?(Conclusion|결론)\s*\n', caseSensitive: false),
-      RegExp(r'\n\s*(\d+\.?\s*)?(References?|참고문헌)\s*\n', caseSensitive: false),
-    ];
+    // 논문 섹션 패턴 (상수에서 동적 생성)
+    final sectionPatterns = _createSectionPatterns();
 
     int lastIndex = 0;
     String currentTitle = 'Introduction';
@@ -188,5 +182,18 @@ class PaperChunkService {
   /// 청크들을 다시 합치기 (필요시)
   static String reconstructText(List<Map<String, dynamic>> chunks) {
     return chunks.map((chunk) => chunk['content']).join('\n\n');
+  }
+
+  /// 논문 섹션 패턴 생성
+  static List<RegExp> _createSectionPatterns() {
+    return [
+      RegExp(r'\n\s*(Abstract|초록)\s*\n', caseSensitive: false),
+      RegExp(r'\n\s*(\d+\.?\s*)?(Introduction|서론)\s*\n', caseSensitive: false),
+      RegExp(r'\n\s*(\d+\.?\s*)?(Methods?|방법론?)\s*\n', caseSensitive: false),
+      RegExp(r'\n\s*(\d+\.?\s*)?(Results?|결과)\s*\n', caseSensitive: false),
+      RegExp(r'\n\s*(\d+\.?\s*)?(Discussion|토론)\s*\n', caseSensitive: false),
+      RegExp(r'\n\s*(\d+\.?\s*)?(Conclusion|결론)\s*\n', caseSensitive: false),
+      RegExp(r'\n\s*(\d+\.?\s*)?(References?|참고문헌)\s*\n', caseSensitive: false),
+    ];
   }
 }

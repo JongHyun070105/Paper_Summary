@@ -9,6 +9,8 @@ import 'package:flutter_paper_summary/models/paper_model.dart';
 import 'package:flutter_paper_summary/models/paper_chunk_model.dart';
 import 'package:flutter_paper_summary/services/auth_service.dart';
 import 'package:flutter_paper_summary/services/paper_chunk_service.dart';
+import 'package:flutter_paper_summary/config/app_constants.dart';
+import 'package:flutter_paper_summary/utils/app_exceptions.dart';
 
 class PdfService {
   final AuthService _authService = AuthService();
@@ -29,10 +31,12 @@ class PdfService {
           result.files.single.path != null) {
         final file = File(result.files.single.path!);
 
-        // 파일 크기 체크 (100MB 제한)
+        // 파일 크기 체크
         final fileSize = await file.length();
-        if (fileSize > 100 * 1024 * 1024) {
-          throw Exception('파일 크기가 너무 큽니다. (최대 100MB)');
+        if (fileSize > AppConstants.maxFileSizeBytes) {
+          throw FileException(
+            '파일 크기가 너무 큽니다. (최대 ${AppConstants.maxFileSizeBytes ~/ (1024 * 1024)}MB)',
+          );
         }
 
         return file;
@@ -60,7 +64,7 @@ class PdfService {
               'User-Agent': 'Mozilla/5.0 (compatible; Flutter PDF Reader)',
             },
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConstants.networkTimeout);
 
       if (response.statusCode == 200) {
         // Content-Type 확인
@@ -70,8 +74,10 @@ class PdfService {
         }
 
         // 파일 크기 체크
-        if (response.bodyBytes.length > 100 * 1024 * 1024) {
-          throw Exception('파일 크기가 너무 큽니다. (최대 100MB)');
+        if (response.bodyBytes.length > AppConstants.maxFileSizeBytes) {
+          throw FileException(
+            '파일 크기가 너무 큽니다. (최대 ${AppConstants.maxFileSizeBytes ~/ (1024 * 1024)}MB)',
+          );
         }
 
         final directory = await getTemporaryDirectory();
@@ -92,12 +98,12 @@ class PdfService {
   Future<Map<String, dynamic>> extractTextFromPdf(File pdfFile) async {
     try {
       if (!await pdfFile.exists()) {
-        throw Exception('PDF 파일이 존재하지 않습니다.');
+        throw FileException('PDF 파일이 존재하지 않습니다.');
       }
 
       final Uint8List bytes = await pdfFile.readAsBytes();
       if (bytes.isEmpty) {
-        throw Exception('PDF 파일이 비어있습니다.');
+        throw FileException('PDF 파일이 비어있습니다.');
       }
 
       final PdfDocument document = PdfDocument(inputBytes: bytes);
