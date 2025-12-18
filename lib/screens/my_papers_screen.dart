@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_paper_summary/services/pdf_service.dart';
 import 'package:flutter_paper_summary/models/paper_model.dart';
+import 'package:flutter_paper_summary/utils/date_utils.dart' as date_utils;
 
 class MyPapersScreen extends StatefulWidget {
   const MyPapersScreen({super.key});
@@ -315,7 +316,7 @@ class _MyPapersScreenState extends State<MyPapersScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _formatDate(paper.uploadedAt),
+                    date_utils.DateUtils.getRelativeTime(paper.uploadedAt),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(
@@ -343,20 +344,5 @@ class _MyPapersScreenState extends State<MyPapersScreen> {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return '오늘';
-    } else if (difference.inDays == 1) {
-      return '어제';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}일 전';
-    } else {
-      return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
-    }
   }
 }

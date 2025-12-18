@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_paper_summary/services/pdf_service.dart';
 import 'package:flutter_paper_summary/models/paper_model.dart';
+import 'package:flutter_paper_summary/utils/app_exceptions.dart';
 import 'dart:io';
 
 class UploadScreen extends StatefulWidget {
@@ -44,19 +45,7 @@ class _UploadScreenState extends State<UploadScreen> {
         });
       }
     } catch (e) {
-      String errorMessage = '다운로드 오류: ';
-      if (e.toString().contains('TimeoutException')) {
-        errorMessage += '다운로드 시간이 초과되었습니다.';
-      } else if (e.toString().contains('SocketException')) {
-        errorMessage += '네트워크 연결을 확인해주세요.';
-      } else if (e.toString().contains('유효하지 않은 URL')) {
-        errorMessage += '올바른 URL을 입력해주세요.';
-      } else if (e.toString().contains('파일 크기가 너무 큽니다')) {
-        errorMessage += '파일 크기가 100MB를 초과합니다.';
-      } else {
-        errorMessage += e.toString();
-      }
-
+      final errorMessage = ExceptionHandler.getErrorMessage(e);
       _showErrorDialog(errorMessage);
       setState(() {
         _isProcessing = false;
